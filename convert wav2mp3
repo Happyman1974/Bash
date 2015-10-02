@@ -1,0 +1,28 @@
+#!/bin/bash
+FOLDER=`/records/*.wav`
+
+countconvertok=0
+countconvertfail=0
+countdel=0
+countskip=0
+
+for filewav in $FOLDER
+do
+filemp3="${filewav%.*}.mp3"
+if test `find "$filewav" -mmin +60`; then
+if [ ! -f $filemp3 ]; then
+if nice -n 19 /usr/bin/lame -b 16 --silent "${filewav}" "${filemp3}"; then
+rm -f "$filewav"
+countconvertok=$((countconvertok+1))
+else
+countconvertfail=$((countconvertfail+1))
+fi
+else
+rm -f "$filewav"
+countdel=$((countdel+1))
+fi
+else
+countskip=$((countskip+1))
+fi
+done
+#echo "Report: Folder:${FOLDER} Converted successfully:${countconvertok}, convert fails:${countconvertfail}, deleted dubles:${countdel}, skipped creation time:${countskip}" | mutt -s "Wav Conver&Clear Report" -- my@mail.ru
